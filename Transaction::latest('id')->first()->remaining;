@@ -1,0 +1,28 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#7420
+    [34mall[39m: [
+      [34;4mApp\Models\TransactionItem[39;24m {#7421
+        [34mid[39m: [35m1[39m,
+        [34mtransaction_id[39m: [35m1[39m,
+        [34mservice_id[39m: [35m3[39m,
+        [34mservice_name[39m: [32m"[39m[32mSetrika Saja[39m[32m"[39m,
+        [34munit[39m: [32m"[39m[32mkg[39m[32m"[39m,
+        [34mquantity[39m: [32m"[39m[32m12.30[39m[32m"[39m,
+        [34munit_price[39m: [35m5000[39m,
+        [34msubtotal[39m: [35m61500[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-11-05 21:29:59[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-11-05 21:29:59[39m[32m"[39m,
+      },
+      [34;4mApp\Models\TransactionItem[39;24m {#7427
+        [34mid[39m: [35m2[39m,
+        [34mtransaction_id[39m: [35m1[39m,
+        [34mservice_id[39m: [35m2[39m,
+        [34mservice_name[39m: [32m"[39m[32mCuci Setrika[39m[32m"[39m,
+        [34munit[39m: [32m"[39m[32mkg[39m[32m"[39m,
+        [34mquantity[39m: [32m"[39m[32m3.10[39m[32m"[39m,
+        [34munit_price[39m: [35m8000[39m,
+        [34msubtotal[39m: [35m24800[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-11-05 21:29:59[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-11-05 21:29:59[39m[32m"[39m,
+      },
+    ],
+  }
