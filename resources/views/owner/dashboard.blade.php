@@ -1,22 +1,34 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
-@section('title', 'Dashboard Owner')
+@section('title', 'Dashboard')
+@section('page_title', 'Dashboard')
 
-{{-- Halaman sementara. Akan diganti dengan layout lengkap dan navigasi di langkah 4. --}}
-@section('content')
-<main class="mx-auto flex min-h-screen max-w-xl items-center px-5 py-10">
-    <div class="w-full rounded-2xl bg-white p-8 shadow-sm ring-1 ring-brand-100">
-        <h1 class="text-2xl font-bold text-ink-700">Dashboard Owner</h1>
-        <p class="mt-2 text-sm text-ink-700/70">
-            Halo, {{ auth()->user()->name }}. Kamu masuk sebagai <strong>Owner</strong>.
-        </p>
+@section('panel')
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <x-stat-card
+        label="Pendapatan hari ini"
+        :value="\App\Support\Format::rupiah($incomeToday)"
+        :note="$paymentCountToday . ' pembayaran diterima'"
+    />
+    <x-stat-card
+        label="Pendapatan bulan ini"
+        :value="\App\Support\Format::rupiah($incomeMonth)"
+        :note="$monthLabel"
+    />
+    <x-stat-card
+        label="Transaksi hari ini"
+        :value="$transactionCountToday"
+        note="Transaksi dicatat hari ini"
+    />
+    <x-stat-card
+        label="Belum lunas"
+        :value="$unpaidCount . ' transaksi'"
+        :note="'Sisa tagihan ' . \App\Support\Format::rupiah($unpaidAmount)"
+    />
+</div>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-6">
-            @csrf
-            <button type="submit" class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-ink-700">
-                Keluar
-            </button>
-        </form>
-    </div>
-</main>
+<div class="mt-6 rounded-2xl border border-dashed border-brand-400/60 bg-white p-10 text-center">
+    <p class="font-semibold text-ink-700">Grafik pendapatan</p>
+    <p class="mt-1 text-sm text-ink-700/70">Grafik harian dan bulanan akan ditambahkan pada tahap berikutnya.</p>
+</div>
 @endsection

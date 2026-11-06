@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,13 +30,27 @@ Route::middleware('auth')->group(function () {
             : redirect()->route('cashier.dashboard');
     })->name('dashboard');
 
+    // Halaman yang dipakai Owner dan Kasir.
+    // Saat ini masih halaman sementara, akan diganti controller pada langkah berikutnya.
+    Route::middleware('role:owner,cashier')->group(function () {
+        Route::view('/transactions/create', 'placeholder', ['title' => 'Transaksi Baru'])->name('transactions.create');
+        Route::view('/transactions', 'placeholder', ['title' => 'Data Transaksi'])->name('transactions.index');
+        Route::view('/customers', 'placeholder', ['title' => 'Data Pelanggan'])->name('customers.index');
+    });
+
     // Area Owner
-    Route::middleware('role:owner')->prefix('owner')->name('owner.')->group(function () {
-        Route::view('/dashboard', 'owner.dashboard')->name('dashboard');
+    Route::middleware('role:owner')->group(function () {
+        Route::get('/owner/dashboard', [DashboardController::class, 'owner'])->name('owner.dashboard');
+
+        Route::view('/services', 'placeholder', ['title' => 'Pengaturan Tarif'])->name('services.index');
+        Route::view('/employees', 'placeholder', ['title' => 'Data Karyawan'])->name('employees.index');
+        Route::view('/reports/daily', 'placeholder', ['title' => 'Rekap Harian'])->name('reports.daily');
+        Route::view('/reports/monthly', 'placeholder', ['title' => 'Rekap Bulanan'])->name('reports.monthly');
+        Route::view('/reports', 'placeholder', ['title' => 'Laporan'])->name('reports.index');
     });
 
     // Area Kasir
-    Route::middleware('role:cashier')->prefix('cashier')->name('cashier.')->group(function () {
-        Route::view('/dashboard', 'cashier.dashboard')->name('dashboard');
+    Route::middleware('role:cashier')->group(function () {
+        Route::get('/cashier/dashboard', [DashboardController::class, 'cashier'])->name('cashier.dashboard');
     });
 });
