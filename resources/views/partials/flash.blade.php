@@ -1,0 +1,5 @@
+@if (session('success'))
+    <div role="status" class="mb-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 ring-1 ring-emerald-200">
+        {{ session('success') }}
+    </div>
+@endif

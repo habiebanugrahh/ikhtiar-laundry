@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,8 +44,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:owner')->group(function () {
         Route::get('/owner/dashboard', [DashboardController::class, 'owner'])->name('owner.dashboard');
 
-        Route::view('/services', 'placeholder', ['title' => 'Pengaturan Tarif'])->name('services.index');
-        Route::view('/employees', 'placeholder', ['title' => 'Data Karyawan'])->name('employees.index');
+        // Pengaturan tarif layanan (tambah, ubah, aktif/nonaktif)
+        Route::resource('services', ServiceController::class)->except(['show', 'destroy']);
+        Route::patch('/services/{service}/toggle', [ServiceController::class, 'toggle'])->name('services.toggle');
+
+        // Data karyawan (akun Kasir)
+        Route::resource('employees', EmployeeController::class)->except(['show', 'destroy']);
+        Route::patch('/employees/{employee}/toggle', [EmployeeController::class, 'toggle'])->name('employees.toggle');
+
         Route::view('/reports/daily', 'placeholder', ['title' => 'Rekap Harian'])->name('reports.daily');
         Route::view('/reports/monthly', 'placeholder', ['title' => 'Rekap Bulanan'])->name('reports.monthly');
         Route::view('/reports', 'placeholder', ['title' => 'Laporan'])->name('reports.index');

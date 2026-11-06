@@ -31,6 +31,8 @@
         </header>
 
         <main class="flex-1 px-4 py-6 lg:px-8">
+            @include('partials.flash')
+
             @yield('panel')
         </main>
     </div>
