@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,8 +37,12 @@ Route::middleware('auth')->group(function () {
     // Halaman yang dipakai Owner dan Kasir.
     // Saat ini masih halaman sementara, akan diganti controller pada langkah berikutnya.
     Route::middleware('role:owner,cashier')->group(function () {
-        Route::view('/transactions/create', 'placeholder', ['title' => 'Transaksi Baru'])->name('transactions.create');
+        // Transaksi: form baru, simpan, dan detail. Daftar transaksi masih halaman sementara.
+        Route::resource('transactions', TransactionController::class)->only(['create', 'store', 'show']);
         Route::view('/transactions', 'placeholder', ['title' => 'Data Transaksi'])->name('transactions.index');
+        // Endpoint JSON untuk form transaksi (harus sebelum resource agar tidak tertangkap customers/{customer})
+        Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search');
+        Route::post('/customers/quick', [CustomerController::class, 'quickStore'])->name('customers.quick');
         Route::resource('customers', CustomerController::class)->except(['destroy']);
     });
 

@@ -13,6 +13,7 @@
 
     <div class="flex items-center gap-3">
         <a href="{{ route('customers.index') }}" class="rounded-lg px-4 py-2.5 text-sm font-medium text-ink-700 hover:bg-cyan-soft">Kembali</a>
+        <a href="{{ route('transactions.create', ['customer' => $customer->id]) }}" class="rounded-lg px-4 py-2.5 text-sm font-semibold text-brand-600 ring-1 ring-brand-400/60 transition hover:bg-brand-100">Transaksi baru</a>
         <a href="{{ route('customers.edit', $customer) }}" class="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
             Ubah data
         </a>

@@ -28,6 +28,17 @@ class Payment extends Model
         ];
     }
 
+    // Nama metode pembayaran untuk ditampilkan
+    public function getMethodLabelAttribute(): string
+    {
+        return match ($this->method) {
+            self::METHOD_CASH => 'Tunai',
+            self::METHOD_TRANSFER => 'Transfer',
+            self::METHOD_QRIS => 'QRIS',
+            default => $this->method,
+        };
+    }
+
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);

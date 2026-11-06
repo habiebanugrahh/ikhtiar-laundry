@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Transaction;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,34 @@ class CustomerController extends Controller
             ->withQueryString();
 
         return view('customers.index', compact('customers', 'search'));
+    }
+
+    // Pencarian pelanggan untuk form transaksi (JSON)
+    public function search(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query('q'));
+        $like = '%' . addcslashes($search, '%_\\') . '%';
+
+        $customers = Customer::query()
+            ->when($search !== '', function ($query) use ($like) {
+                $query->where(function ($query) use ($like) {
+                    $query->where('name', 'like', $like)
+                        ->orWhere('phone', 'like', $like);
+                });
+            })
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id', 'name', 'phone', 'address']);
+
+        return response()->json($customers);
+    }
+
+    // Tambah pelanggan cepat dari form transaksi (JSON)
+    public function quickStore(Request $request): JsonResponse
+    {
+        $customer = Customer::create($this->validated($request));
+
+        return response()->json($customer->only(['id', 'name', 'phone', 'address']), 201);
     }
 
     public function create(): View
