@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ServiceController;
@@ -37,7 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:owner,cashier')->group(function () {
         Route::view('/transactions/create', 'placeholder', ['title' => 'Transaksi Baru'])->name('transactions.create');
         Route::view('/transactions', 'placeholder', ['title' => 'Data Transaksi'])->name('transactions.index');
-        Route::view('/customers', 'placeholder', ['title' => 'Data Pelanggan'])->name('customers.index');
+        Route::resource('customers', CustomerController::class)->except(['destroy']);
     });
 
     // Area Owner
