@@ -10,6 +10,7 @@ use App\Support\Format;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,69 @@ use Illuminate\View\View;
 
 class TransactionController extends Controller
 {
+    // Daftar transaksi dengan pencarian dan filter
+    public function index(Request $request): View
+    {
+        $user = $request->user();
+
+        $search = trim((string) $request->query('q'));
+        $like = '%' . addcslashes($search, '%_\\') . '%';
+
+        $paymentStatus = $request->query('payment_status');
+        $paymentStatus = in_array($paymentStatus, [
+            Transaction::PAYMENT_UNPAID,
+            Transaction::PAYMENT_PARTIAL,
+            Transaction::PAYMENT_PAID,
+        ], true) ? $paymentStatus : null;
+
+        $orderStatus = $request->query('order_status');
+        $orderStatus = array_key_exists((string) $orderStatus, Transaction::orderStatusLabels()) ? $orderStatus : null;
+
+        // Filter tanggal hanya untuk Owner
+        $from = $user->isOwner() ? $this->parseDate($request->query('from')) : null;
+        $to = $user->isOwner() ? $this->parseDate($request->query('to')) : null;
+
+        $query = Transaction::query()
+            ->with('customer')
+            // Kasir hanya melihat transaksi hari ini dan yang belum lunas
+            ->when($user->isCashier(), function ($query) {
+                $query->where(function ($query) {
+                    $query->whereDate('transaction_date', now()->toDateString())
+                        ->orWhere('payment_status', '!=', Transaction::PAYMENT_PAID);
+                });
+            })
+            ->when($search !== '', function ($query) use ($like) {
+                $query->where(function ($query) use ($like) {
+                    $query->where('code', 'like', $like)
+                        ->orWhereHas('customer', function ($query) use ($like) {
+                            $query->where('name', 'like', $like)
+                                ->orWhere('phone', 'like', $like);
+                        });
+                });
+            })
+            ->when($paymentStatus, fn ($query) => $query->where('payment_status', $paymentStatus))
+            ->when($orderStatus, fn ($query) => $query->where('order_status', $orderStatus))
+            ->when($from, fn ($query) => $query->whereDate('transaction_date', '>=', $from->toDateString()))
+            ->when($to, fn ($query) => $query->whereDate('transaction_date', '<=', $to->toDateString()))
+            ->orderByDesc('transaction_date')
+            ->orderByDesc('id');
+
+        // Ringkasan untuk seluruh hasil filter, bukan hanya halaman yang tampil
+        $summary = (clone $query)->toBase()->reorder()->selectRaw(
+            'COUNT(*) as count, COALESCE(SUM(total), 0) as total, COALESCE(SUM(total - paid_amount), 0) as remaining'
+        )->first();
+
+        return view('transactions.index', [
+            'transactions' => $query->paginate(15)->withQueryString(),
+            'summary' => $summary,
+            'search' => $search,
+            'paymentStatus' => $paymentStatus,
+            'orderStatus' => $orderStatus,
+            'from' => $from?->toDateString(),
+            'to' => $to?->toDateString(),
+        ]);
+    }
+
     // Form transaksi baru
     public function create(Request $request): View
     {
@@ -164,15 +228,44 @@ class TransactionController extends Controller
     {
         $user = $request->user();
 
-        // Kasir hanya boleh melihat transaksi hari ini dan transaksi yang belum lunas
-        if ($user->isCashier()
-            && ! $transaction->transaction_date->isToday()
-            && $transaction->payment_status === Transaction::PAYMENT_PAID) {
-            abort(403);
-        }
+        abort_unless($transaction->isVisibleTo($user), 403);
 
         $transaction->load(['customer', 'creator', 'items', 'payments.receiver']);
 
         return view('transactions.show', compact('transaction'));
+    }
+
+    // Mengubah status pesanan (diterima, diproses, selesai, diambil)
+    public function updateStatus(Request $request, Transaction $transaction): RedirectResponse
+    {
+        abort_unless($transaction->isVisibleTo($request->user()), 403);
+
+        $data = $request->validate([
+            'order_status' => ['required', Rule::in(array_keys(Transaction::orderStatusLabels()))],
+        ]);
+
+        $transaction->update([
+            'order_status' => $data['order_status'],
+            // Waktu pengambilan dicatat saat diambil dan dikosongkan jika status dibatalkan
+            'picked_up_at' => $data['order_status'] === Transaction::ORDER_PICKED_UP
+                ? ($transaction->picked_up_at ?? now())
+                : null,
+        ]);
+
+        return redirect()->route('transactions.show', $transaction)
+            ->with('success', 'Status pesanan diubah menjadi ' . Transaction::orderStatusLabels()[$data['order_status']] . '.');
+    }
+
+    private function parseDate(mixed $value): ?Carbon
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m-d', $value)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

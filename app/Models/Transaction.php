@@ -21,6 +21,27 @@ class Transaction extends Model
 
     public const DEFAULT_EXPRESS_FEE = 5000;
 
+    // Urutan tahap pesanan dari awal sampai diambil pelanggan
+    public const ORDER_FLOW = [
+        self::ORDER_RECEIVED,
+        self::ORDER_PROCESSING,
+        self::ORDER_DONE,
+        self::ORDER_PICKED_UP,
+    ];
+
+    public const PAYMENT_STATUS_LABELS = [
+        self::PAYMENT_UNPAID => 'Belum bayar',
+        self::PAYMENT_PARTIAL => 'Sebagian',
+        self::PAYMENT_PAID => 'Lunas',
+    ];
+
+    public const ORDER_STATUS_LABELS = [
+        self::ORDER_RECEIVED => 'Diterima',
+        self::ORDER_PROCESSING => 'Diproses',
+        self::ORDER_DONE => 'Selesai',
+        self::ORDER_PICKED_UP => 'Diambil',
+    ];
+
     protected $fillable = [
         'code',
         'customer_id',
@@ -66,13 +87,51 @@ class Transaction extends Model
         return $this->hasMany(Payment::class);
     }
 
+    // Daftar status pesanan beserta namanya
+    public static function orderStatusLabels(): array
+    {
+        return [
+            self::ORDER_RECEIVED => 'Diterima',
+            self::ORDER_PROCESSING => 'Diproses',
+            self::ORDER_DONE => 'Selesai',
+            self::ORDER_PICKED_UP => 'Diambil',
+        ];
+    }
+
+    // Kasir hanya boleh mengakses transaksi hari ini dan transaksi yang belum lunas
+    public function isVisibleTo(User $user): bool
+    {
+        if ($user->isOwner()) {
+            return true;
+        }
+
+        return $this->transaction_date->isToday()
+            || $this->payment_status !== self::PAYMENT_PAID;
+    }
+
     // Sisa tagihan yang belum dibayar
     public function getRemainingAttribute(): int
     {
         return max(0, $this->total - $this->paid_amount);
     }
 
-    // Membuat nomor transaksi unik per hari
+    // Owner melihat semua transaksi. Kasir hanya transaksi hari ini dan yang belum lunas.
+    public function isViewableBy(User $user): bool
+    {
+        return $user->isOwner()
+            || $this->transaction_date->isToday()
+            || $this->payment_status !== self::PAYMENT_PAID;
+    }
+
+    // Tahap pesanan berikutnya, atau null jika sudah diambil
+    public function getNextOrderStatusAttribute(): ?string
+    {
+        $index = array_search($this->order_status, self::ORDER_FLOW, true);
+
+        return $index === false ? null : (self::ORDER_FLOW[$index + 1] ?? null);
+    }
+
+    // Membuat nomor transaksi unik per hari, contoh: IKH-20261105-001
     public static function generateCode(CarbonInterface $date): string
     {
         $prefix = 'IKH-' . $date->format('Ymd') . '-';

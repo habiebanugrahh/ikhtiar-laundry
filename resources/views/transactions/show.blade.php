@@ -3,7 +3,20 @@
 @section('title', $transaction->code)
 @section('page_title', 'Detail transaksi')
 
+@push('head')
+    <style>[x-cloak] { display: none !important; }</style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+@endpush
+
 @section('panel')
+@php
+    $flow = \App\Models\Transaction::ORDER_FLOW;
+    $currentIndex = array_search($transaction->order_status, $flow, true);
+    $nextStatus = $transaction->next_order_status;
+    $remaining = $transaction->remaining;
+    $inputClass = 'block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30';
+@endphp
+
 <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
         <h2 class="text-xl font-bold text-ink-700">{{ $transaction->code }}</h2>
@@ -74,8 +87,8 @@
                 </div>
                 <div class="flex justify-between gap-3 font-semibold">
                     <dt class="text-ink-700/70">Sisa tagihan</dt>
-                    <dd @class(['text-red-600' => $transaction->remaining > 0, 'text-emerald-600' => $transaction->remaining === 0])>
-                        {{ \App\Support\Format::rupiah($transaction->remaining) }}
+                    <dd @class(['text-red-600' => $remaining > 0, 'text-emerald-600' => $remaining === 0])>
+                        {{ \App\Support\Format::rupiah($remaining) }}
                     </dd>
                 </div>
             </dl>
@@ -115,29 +128,201 @@
         </section>
     </div>
 
-    {{-- Informasi transaksi --}}
-    <aside class="h-fit space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-100">
-        <dl class="space-y-4 text-sm">
-            <div>
-                <dt class="text-ink-700/70">Pelanggan</dt>
-                <dd class="mt-0.5 font-medium">
-                    <a href="{{ route('customers.show', $transaction->customer) }}" class="text-brand-600 hover:text-ink-700">{{ $transaction->customer->name }}</a>
-                </dd>
-                <dd class="text-ink-700/70">{{ $transaction->customer->phone }}</dd>
-            </div>
-            <div>
-                <dt class="text-ink-700/70">Tanggal transaksi</dt>
-                <dd class="mt-0.5 font-medium text-ink-700">{{ $transaction->transaction_date->translatedFormat('l, d F Y') }}</dd>
-            </div>
-            <div>
-                <dt class="text-ink-700/70">Dicatat oleh</dt>
-                <dd class="mt-0.5 font-medium text-ink-700">{{ $transaction->creator->name }}</dd>
-            </div>
-            <div>
-                <dt class="text-ink-700/70">Catatan pesanan</dt>
-                <dd class="mt-0.5 text-ink-700">{{ $transaction->notes ?: '-' }}</dd>
-            </div>
-        </dl>
+    <aside class="h-fit space-y-6">
+
+        {{-- Status pesanan --}}
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-100">
+            <h3 class="font-semibold text-ink-700">Status pesanan</h3>
+
+            <ol class="mt-3 space-y-2">
+                @foreach ($flow as $index => $step)
+                    <li class="flex items-center gap-3 text-sm">
+                        <span @class([
+                            'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                            'bg-brand-500 text-white' => $index <= $currentIndex,
+                            'bg-slate-100 text-slate-500' => $index > $currentIndex,
+                        ])>{{ $index + 1 }}</span>
+                        <span @class([
+                            'font-semibold text-ink-700' => $index === $currentIndex,
+                            'text-ink-700/70' => $index !== $currentIndex,
+                        ])>{{ \App\Models\Transaction::ORDER_STATUS_LABELS[$step] }}</span>
+                    </li>
+                @endforeach
+            </ol>
+
+            @if ($transaction->picked_up_at)
+                <p class="mt-3 text-xs text-ink-700/60">Diambil pada {{ $transaction->picked_up_at->translatedFormat('d M Y, H:i') }}</p>
+            @endif
+
+            @if ($nextStatus)
+                <form method="POST" action="{{ route('transactions.status', $transaction) }}" class="mt-4">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="order_status" value="{{ $nextStatus }}">
+                    <button type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
+                        Tandai {{ \App\Models\Transaction::ORDER_STATUS_LABELS[$nextStatus] }}
+                    </button>
+                </form>
+            @else
+                <p class="mt-4 rounded-lg bg-cyan-soft px-3 py-2 text-sm text-ink-700">Pesanan sudah diambil pelanggan.</p>
+            @endif
+
+            @if ($transaction->order_status === \App\Models\Transaction::ORDER_PICKED_UP && $remaining > 0)
+                <p class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Pesanan sudah diambil, tetapi tagihan belum lunas.</p>
+            @endif
+
+            @error('order_status')
+                <p class="mt-3 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+
+            <details class="mt-4 border-t border-brand-100 pt-3">
+                    <summary class="cursor-pointer text-sm font-medium text-brand-600 hover:text-ink-700">Koreksi status</summary>
+                    <form method="POST" action="{{ route('transactions.status', $transaction) }}" class="mt-3 flex gap-2">
+                        @csrf
+                        @method('PATCH')
+                        <label for="correct-status" class="sr-only">Status pesanan</label>
+                        <select id="correct-status" name="order_status" class="{{ $inputClass }}">
+                            @foreach (\App\Models\Transaction::ORDER_STATUS_LABELS as $value => $label)
+                                <option value="{{ $value }}" @selected($transaction->order_status === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-brand-600 ring-1 ring-brand-400/60 transition hover:bg-brand-100">Simpan</button>
+                    </form>
+            </details>
+        </section>
+
+        {{-- Tambah pembayaran --}}
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-100">
+            <h3 class="font-semibold text-ink-700">Pembayaran</h3>
+
+            @if ($remaining > 0)
+                <p class="mt-1 text-sm text-ink-700/70">
+                    Sisa tagihan <span class="font-semibold text-red-600">{{ \App\Support\Format::rupiah($remaining) }}</span>
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ route('transactions.payments.store', $transaction) }}"
+                    x-data="paymentForm({ method: @js(old('payment_method', 'cash')), input: @js(old('payment_input', '')), remaining: {{ $remaining }} })"
+                    class="mt-4 space-y-3"
+                    novalidate
+                >
+                    @csrf
+
+                    <div>
+                        <label for="payment_method" class="block text-sm text-ink-700/70">Metode</label>
+                        <select id="payment_method" name="payment_method" x-model="method" class="mt-1 {{ $inputClass }}">
+                            <option value="cash">Tunai</option>
+                            <option value="transfer">Transfer</option>
+                            <option value="qris">QRIS</option>
+                        </select>
+                        @error('payment_method')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="payment_input" class="block text-sm text-ink-700/70" x-text="method === 'cash' ? 'Uang diterima (Rp)' : 'Nominal dibayar (Rp)'"></label>
+                        <div class="mt-1 flex gap-2">
+                            <input
+                                id="payment_input"
+                                name="payment_input"
+                                type="number"
+                                min="1"
+                                step="1"
+                                inputmode="numeric"
+                                x-model="input"
+                                class="{{ $inputClass }} @error('payment_input') border-red-400 @enderror"
+                            >
+                            <button type="button" x-on:click="payFull()" class="shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-brand-600 ring-1 ring-brand-400/60 transition hover:bg-brand-100">
+                                Lunasi
+                            </button>
+                        </div>
+                        @error('payment_input')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <p x-show="method !== 'cash' && inputAmount > remaining" x-cloak class="text-sm text-red-600">
+                        Nominal melebihi sisa tagihan.
+                    </p>
+
+                    <dl class="space-y-1.5 text-sm">
+                        <div class="flex justify-between gap-3" x-show="change > 0" x-cloak>
+                            <dt class="text-ink-700/70">Kembalian</dt>
+                            <dd class="font-semibold text-ink-700" x-text="rupiah(change)"></dd>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-ink-700/70">Sisa setelah pembayaran</dt>
+                            <dd class="font-semibold" x-bind:class="left > 0 ? 'text-red-600' : 'text-emerald-600'" x-text="rupiah(left)"></dd>
+                        </div>
+                    </dl>
+
+                    <button type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
+                        Catat pembayaran
+                    </button>
+                </form>
+            @else
+                <p class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Transaksi ini sudah lunas.</p>
+            @endif
+        </section>
+
+        {{-- Informasi transaksi --}}
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-brand-100">
+            <dl class="space-y-4 text-sm">
+                <div>
+                    <dt class="text-ink-700/70">Pelanggan</dt>
+                    <dd class="mt-0.5 font-medium">
+                        <a href="{{ route('customers.show', $transaction->customer) }}" class="text-brand-600 hover:text-ink-700">{{ $transaction->customer->name }}</a>
+                    </dd>
+                    <dd class="text-ink-700/70">{{ $transaction->customer->phone }}</dd>
+                </div>
+                <div>
+                    <dt class="text-ink-700/70">Tanggal transaksi</dt>
+                    <dd class="mt-0.5 font-medium text-ink-700">{{ $transaction->transaction_date->translatedFormat('l, d F Y') }}</dd>
+                </div>
+                <div>
+                    <dt class="text-ink-700/70">Dicatat oleh</dt>
+                    <dd class="mt-0.5 font-medium text-ink-700">{{ $transaction->creator->name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-ink-700/70">Catatan pesanan</dt>
+                    <dd class="mt-0.5 text-ink-700">{{ $transaction->notes ?: '-' }}</dd>
+                </div>
+            </dl>
+        </section>
     </aside>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Form pembayaran lanjutan: hitung kembalian dan sisa tagihan
+    function paymentForm(config) {
+        return {
+            method: config.method,
+            input: config.input,
+            remaining: config.remaining,
+
+            get inputAmount() {
+                return Math.max(0, parseInt(this.input) || 0);
+            },
+            get recorded() {
+                return Math.min(this.inputAmount, this.remaining);
+            },
+            get change() {
+                return this.method === 'cash' ? Math.max(0, this.inputAmount - this.remaining) : 0;
+            },
+            get left() {
+                return Math.max(0, this.remaining - this.recorded);
+            },
+            payFull() {
+                this.input = this.remaining;
+            },
+            rupiah(value) {
+                return 'Rp' + new Intl.NumberFormat('id-ID').format(value || 0);
+            },
+        };
+    }
+</script>
+@endpush

@@ -38,7 +38,13 @@
             <tbody class="divide-y divide-brand-100">
                 @forelse ($latestTransactions as $transaction)
                     <tr>
-                        <td class="px-5 py-3 font-medium text-ink-700">{{ $transaction->code }}</td>
+                        <td class="px-5 py-3 font-medium text-ink-700">
+                            @if ($transaction->isVisibleTo(auth()->user()))
+                                <a href="{{ route('transactions.show', $transaction) }}" class="text-brand-600 hover:text-ink-700">{{ $transaction->code }}</a>
+                            @else
+                                {{ $transaction->code }}
+                            @endif
+                        </td>
                         <td class="px-5 py-3">{{ $transaction->customer->name }}</td>
                         <td class="px-5 py-3 text-right">{{ \App\Support\Format::rupiah($transaction->total) }}</td>
                         <td class="px-5 py-3"><x-payment-badge :status="$transaction->payment_status" /></td>

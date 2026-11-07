@@ -43,7 +43,13 @@
             <tbody class="divide-y divide-brand-100">
                 @forelse ($transactions as $transaction)
                     <tr>
-                        <td class="px-5 py-3 font-medium text-ink-700">{{ $transaction->code }}</td>
+                        <td class="px-5 py-3 font-medium">
+                            @if ($transaction->isVisibleTo(auth()->user()))
+                                <a href="{{ route('transactions.show', $transaction) }}" class="text-brand-600 hover:text-ink-700">{{ $transaction->code }}</a>
+                            @else
+                                <span class="text-ink-700">{{ $transaction->code }}</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-3">{{ $transaction->transaction_date->translatedFormat('d M Y') }}</td>
                         <td class="px-5 py-3 text-right">{{ \App\Support\Format::rupiah($transaction->total) }}</td>
                         <td class="px-5 py-3"><x-payment-badge :status="$transaction->payment_status" /></td>

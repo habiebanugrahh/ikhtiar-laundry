@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
@@ -34,12 +35,12 @@ Route::middleware('auth')->group(function () {
             : redirect()->route('cashier.dashboard');
     })->name('dashboard');
 
-    // Halaman yang dipakai Owner dan Kasir.
-    // Saat ini masih halaman sementara, akan diganti controller pada langkah berikutnya.
+    // Halaman yang dipakai Owner dan Kasir
     Route::middleware('role:owner,cashier')->group(function () {
-        // Transaksi: form baru, simpan, dan detail. Daftar transaksi masih halaman sementara.
-        Route::resource('transactions', TransactionController::class)->only(['create', 'store', 'show']);
-        Route::view('/transactions', 'placeholder', ['title' => 'Data Transaksi'])->name('transactions.index');
+        // Transaksi: daftar, form baru, simpan, detail, ubah status, dan tambah pembayaran
+        Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
+        Route::patch('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus'])->name('transactions.status');
+        Route::post('/transactions/{transaction}/payments', [PaymentController::class, 'store'])->name('transactions.payments.store');
         // Endpoint JSON untuk form transaksi (harus sebelum resource agar tidak tertangkap customers/{customer})
         Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search');
         Route::post('/customers/quick', [CustomerController::class, 'quickStore'])->name('customers.quick');
