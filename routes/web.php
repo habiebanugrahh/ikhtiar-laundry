@@ -62,7 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/employees/{employee}/toggle', [EmployeeController::class, 'toggle'])->name('employees.toggle');
 
         Route::get('/reports/daily', [ReportController::class, 'daily'])->name('reports.daily');
-        Route::view('/reports/monthly', 'placeholder', ['title' => 'Rekap Bulanan'])->name('reports.monthly');
+        Route::get('/reports/monthly', [ReportController::class, 'monthly'])->name('reports.monthly');
         Route::view('/reports', 'placeholder', ['title' => 'Laporan'])->name('reports.index');
     });
 

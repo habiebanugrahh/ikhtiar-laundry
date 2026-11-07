@@ -54,6 +54,114 @@ class ReportController extends Controller
         ]);
     }
 
+    // Rekap pendapatan bulanan: total, tren harian, dan ringkasan transaksi
+    public function monthly(Request $request): View
+    {
+        $now = now();
+
+        $year = (int) $request->query('year', $now->year);
+        $month = (int) $request->query('month', $now->month);
+
+        if ($month < 1 || $month > 12) {
+            $month = $now->month;
+        }
+
+        if ($year < 2000 || $year > $now->year) {
+            $year = $now->year;
+        }
+
+        $start = Carbon::create($year, $month, 1)->startOfMonth();
+
+        // Bulan yang akan datang tidak punya data, jadi dibatasi sampai bulan ini
+        if ($start->format('Y-m') > $now->format('Y-m')) {
+            $start = $now->copy()->startOfMonth();
+        }
+
+        $end = $start->copy()->endOfMonth();
+        $isCurrentMonth = $start->format('Y-m') === $now->format('Y-m');
+
+        // Bulan berjalan dihitung sampai hari ini saja
+        $elapsedDays = $isCurrentMonth ? $now->day : $start->daysInMonth;
+
+        // Pembayaran dikelompokkan per tanggal uang diterima (paid_at)
+        $dailyRows = Payment::query()
+            ->whereBetween('paid_at', [$start, $end])
+            ->selectRaw('DATE(paid_at) as day, COUNT(*) as payment_count, SUM(amount) as total')
+            ->groupByRaw('DATE(paid_at)')
+            ->get()
+            ->keyBy('day');
+
+        $days = collect(range(1, $elapsedDays))->map(function ($day) use ($start, $dailyRows) {
+            $date = $start->copy()->day($day);
+            $row = $dailyRows->get($date->toDateString());
+
+            return [
+                'date' => $date,
+                'count' => (int) ($row->payment_count ?? 0),
+                'total' => (int) ($row->total ?? 0),
+            ];
+        });
+
+        $totalReceived = (int) $days->sum('total');
+        $bestDay = $days->sortByDesc('total')->first();
+
+        $byMethod = Payment::query()
+            ->whereBetween('paid_at', [$start, $end])
+            ->selectRaw('method, SUM(amount) as total')
+            ->groupBy('method')
+            ->pluck('total', 'method');
+
+        // Pembanding: periode yang sama pada bulan sebelumnya (jumlah hari disamakan untuk bulan berjalan)
+        $previousStart = $start->copy()->subMonthNoOverflow()->startOfMonth();
+        $previousEnd = $isCurrentMonth
+            ? $previousStart->copy()->day(min($elapsedDays, $previousStart->daysInMonth))->endOfDay()
+            : $previousStart->copy()->endOfMonth();
+
+        $previousTotal = (int) Payment::query()
+            ->whereBetween('paid_at', [$previousStart, $previousEnd])
+            ->sum('amount');
+
+        $changePercent = $previousTotal > 0
+            ? (int) round(($totalReceived - $previousTotal) / $previousTotal * 100)
+            : null;
+
+        // Ringkasan transaksi yang dicatat pada bulan ini (nilai tagihan, bukan uang masuk)
+        $billed = Transaction::query()
+            ->whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()])
+            ->selectRaw("COUNT(*) as count,
+                COALESCE(SUM(total), 0) as total,
+                COALESCE(SUM(CASE WHEN payment_status <> 'paid' THEN 1 ELSE 0 END), 0) as unpaid_count,
+                COALESCE(SUM(CASE WHEN payment_status <> 'paid' THEN total - paid_amount ELSE 0 END), 0) as outstanding")
+            ->first();
+
+        $firstPayment = Payment::min('paid_at');
+        $firstYear = $firstPayment ? Carbon::parse($firstPayment)->year : $now->year;
+
+        return view('reports.monthly', [
+            'start' => $start,
+            'isCurrentMonth' => $isCurrentMonth,
+            'previousMonth' => $start->copy()->subMonthNoOverflow(),
+            'nextMonth' => $isCurrentMonth ? null : $start->copy()->addMonthNoOverflow(),
+            'years' => range($now->year, min($firstYear, $now->year)),
+            'days' => $days,
+            'elapsedDays' => $elapsedDays,
+            'totalReceived' => $totalReceived,
+            'paymentCount' => (int) $days->sum('count'),
+            'transactionCount' => Payment::query()->whereBetween('paid_at', [$start, $end])->distinct()->count('transaction_id'),
+            'averagePerDay' => (int) round($totalReceived / max(1, $elapsedDays)),
+            'bestDay' => ($bestDay && $bestDay['total'] > 0) ? $bestDay : null,
+            'byMethod' => $byMethod,
+            'previousTotal' => $previousTotal,
+            'changePercent' => $changePercent,
+            'billed' => $billed,
+            'chart' => [
+                'labels' => $days->map(fn ($day) => (string) $day['date']->day)->all(),
+                'values' => $days->pluck('total')->all(),
+                'monthLabel' => $start->translatedFormat('F Y'),
+            ],
+        ]);
+    }
+
     private function parseDate(mixed $value): ?Carbon
     {
         if (! is_string($value) || $value === '') {
