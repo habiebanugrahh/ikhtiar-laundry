@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:owner,cashier')->group(function () {
         // Transaksi: daftar, form baru, simpan, detail, ubah status, dan tambah pembayaran
         Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');
         Route::patch('/transactions/{transaction}/status', [TransactionController::class, 'updateStatus'])->name('transactions.status');
         Route::post('/transactions/{transaction}/payments', [PaymentController::class, 'store'])->name('transactions.payments.store');
         // Endpoint JSON untuk form transaksi (harus sebelum resource agar tidak tertangkap customers/{customer})

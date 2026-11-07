@@ -256,6 +256,16 @@ class TransactionController extends Controller
             ->with('success', 'Status pesanan diubah menjadi ' . Transaction::orderStatusLabels()[$data['order_status']] . '.');
     }
 
+    // Nota transaksi siap cetak (A4)
+    public function receipt(Request $request, Transaction $transaction): View
+    {
+        abort_unless($transaction->isVisibleTo($request->user()), 403);
+
+        $transaction->load(['customer', 'creator', 'items', 'payments']);
+
+        return view('transactions.receipt', compact('transaction'));
+    }
+
     private function parseDate(mixed $value): ?Carbon
     {
         if (! is_string($value) || $value === '') {
