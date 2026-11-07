@@ -16,9 +16,13 @@
 </div>
 
 <div class="mt-5 grid gap-4 sm:grid-cols-3">
-    <x-stat-card label="Transaksi hari ini" :value="$transactionCountToday" note="Transaksi dicatat hari ini" />
-    <x-stat-card label="Menunggu pembayaran" :value="$waitingPaymentCount" note="Belum bayar atau baru dibayar sebagian" />
+    <x-stat-card label="Transaksi hari ini" :value="$transactionCountToday" note="Transaksi dicatat hari ini" :href="route('transactions.index')" />
+    <x-stat-card label="Menunggu pembayaran" :value="$waitingPaymentCount" note="Belum bayar atau baru dibayar sebagian" :href="route('transactions.index', ['payment_status' => 'outstanding'])" />
     <x-stat-card label="Pesanan dalam proses" :value="$inProgressCount" note="Berstatus diterima atau diproses" />
+</div>
+
+<div class="mt-6">
+    @include('partials.unpaid-list', ['transactions' => $unpaidTransactions])
 </div>
 
 <section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-brand-100">

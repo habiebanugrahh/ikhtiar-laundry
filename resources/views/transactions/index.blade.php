@@ -35,6 +35,7 @@
             <label for="payment_status" class="block text-sm text-ink-700/70">Pembayaran</label>
             <select id="payment_status" name="payment_status" class="mt-1 {{ $inputClass }}">
                 <option value="">Semua</option>
+                <option value="outstanding" @selected($paymentStatus === 'outstanding')>Belum lunas (belum bayar dan sebagian)</option>
                 @foreach (\App\Models\Transaction::PAYMENT_STATUS_LABELS as $value => $label)
                     <option value="{{ $value }}" @selected($paymentStatus === $value)>{{ $label }}</option>
                 @endforeach

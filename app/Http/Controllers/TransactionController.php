@@ -31,6 +31,7 @@ class TransactionController extends Controller
             Transaction::PAYMENT_UNPAID,
             Transaction::PAYMENT_PARTIAL,
             Transaction::PAYMENT_PAID,
+            'outstanding', // gabungan belum bayar dan sebagian
         ], true) ? $paymentStatus : null;
 
         $orderStatus = $request->query('order_status');
@@ -58,7 +59,9 @@ class TransactionController extends Controller
                         });
                 });
             })
-            ->when($paymentStatus, fn ($query) => $query->where('payment_status', $paymentStatus))
+            ->when($paymentStatus, fn ($query) => $paymentStatus === 'outstanding'
+                ? $query->where('payment_status', '!=', Transaction::PAYMENT_PAID)
+                : $query->where('payment_status', $paymentStatus))
             ->when($orderStatus, fn ($query) => $query->where('order_status', $orderStatus))
             ->when($from, fn ($query) => $query->whereDate('transaction_date', '>=', $from->toDateString()))
             ->when($to, fn ($query) => $query->whereDate('transaction_date', '<=', $to->toDateString()))
