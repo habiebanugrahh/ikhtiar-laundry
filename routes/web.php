@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
@@ -60,7 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('employees', EmployeeController::class)->except(['show', 'destroy']);
         Route::patch('/employees/{employee}/toggle', [EmployeeController::class, 'toggle'])->name('employees.toggle');
 
-        Route::view('/reports/daily', 'placeholder', ['title' => 'Rekap Harian'])->name('reports.daily');
+        Route::get('/reports/daily', [ReportController::class, 'daily'])->name('reports.daily');
         Route::view('/reports/monthly', 'placeholder', ['title' => 'Rekap Bulanan'])->name('reports.monthly');
         Route::view('/reports', 'placeholder', ['title' => 'Laporan'])->name('reports.index');
     });
