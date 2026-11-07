@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\IncomeReportSpreadsheet;
 use App\Models\Payment;
 use App\Models\Transaction;
+use App\Support\IncomeReport;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ReportController extends Controller
 {
@@ -160,6 +166,69 @@ class ReportController extends Controller
                 'monthLabel' => $start->translatedFormat('F Y'),
             ],
         ]);
+    }
+
+    // Halaman Laporan: pilih jenis dan periode, tinjau hasilnya, lalu unduh
+    public function index(Request $request): View
+    {
+        $report = $this->reportFromRequest($request);
+
+        $firstPayment = Payment::min('paid_at');
+        $firstYear = $firstPayment ? Carbon::parse($firstPayment)->year : now()->year;
+
+        return view('reports.index', [
+            'report' => $report,
+            'previewRows' => $report->payments->take(20),
+            'years' => range(now()->year, min($firstYear, now()->year)),
+        ]);
+    }
+
+    // Mengunduh laporan dalam format PDF atau Excel (xlsx)
+    public function export(Request $request, string $format): SymfonyResponse
+    {
+        $report = $this->reportFromRequest($request);
+        $user = $request->user();
+
+        // Laporan dengan ribuan baris bisa butuh waktu lebih lama
+        set_time_limit(120);
+
+        if ($format === 'pdf') {
+            $options = new Options();
+            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('isRemoteEnabled', false);
+
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml(view('reports.pdf', [
+                'report' => $report,
+                'generatedBy' => $user->name,
+                'generatedAt' => now(),
+            ])->render());
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            return response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $report->fileName('pdf') . '"',
+            ]);
+        }
+
+        $spreadsheet = IncomeReportSpreadsheet::build($report, $user->name);
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            (new Xlsx($spreadsheet))->save('php://output');
+        }, $report->fileName('xlsx'), [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    private function reportFromRequest(Request $request): IncomeReport
+    {
+        return IncomeReport::make(
+            $request->query('type'),
+            $request->query('date'),
+            $request->query('year'),
+            $request->query('month'),
+        );
     }
 
     private function parseDate(mixed $value): ?Carbon

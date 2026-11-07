@@ -63,7 +63,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/reports/daily', [ReportController::class, 'daily'])->name('reports.daily');
         Route::get('/reports/monthly', [ReportController::class, 'monthly'])->name('reports.monthly');
-        Route::view('/reports', 'placeholder', ['title' => 'Laporan'])->name('reports.index');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export/{format}', [ReportController::class, 'export'])
+            ->whereIn('format', ['pdf', 'xlsx'])
+            ->name('reports.export');
     });
 
     // Area Kasir

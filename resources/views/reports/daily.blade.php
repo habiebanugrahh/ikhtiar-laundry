@@ -39,6 +39,8 @@
             <a href="{{ route('reports.daily') }}" class="{{ $navClass }}">Hari ini</a>
         @endunless
 
+        <a href="{{ route('reports.index', ['type' => 'daily', 'date' => $date->toDateString()]) }}" class="{{ $navClass }}">Unduh laporan</a>
+
         <noscript>
             <button type="submit" class="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white">Tampilkan</button>
         </noscript>

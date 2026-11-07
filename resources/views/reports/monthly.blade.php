@@ -47,6 +47,8 @@
             <a href="{{ route('reports.monthly') }}" class="{{ $navClass }}">Bulan ini</a>
         @endunless
 
+        <a href="{{ route('reports.index', ['type' => 'monthly', 'year' => $start->year, 'month' => $start->month]) }}" class="{{ $navClass }}">Unduh laporan</a>
+
         <noscript>
             <button type="submit" class="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white">Tampilkan</button>
         </noscript>
