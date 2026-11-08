@@ -14,6 +14,7 @@
         'chart' => 'M4 20V10M10 20V4M16 20v-8M22 20H2',
         'download' => 'M12 3v12m0 0l-4-4m4 4l4-4M4 21h16',
         'logout' => 'M15 17l5-5-5-5M20 12H9M9 21H5a1 1 0 01-1-1V4a1 1 0 011-1h4',
+        'lock' => 'M8 11V8a4 4 0 118 0v3M6 11h12v9H6v-9z',
     ];
 
     // Menu per role. Menu yang bukan hak akses tidak ditampilkan.
@@ -99,6 +100,21 @@
             <p class="truncate text-sm font-semibold text-ink-700">{{ $user->name }}</p>
             <p class="text-xs text-ink-700/60">{{ $roleLabel }}</p>
         </div>
+
+        <a
+            href="{{ route('password.edit') }}"
+            @if (request()->routeIs('password.*')) aria-current="page" @endif
+            @class([
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+                'bg-brand-100 text-ink-700' => request()->routeIs('password.*'),
+                'text-ink-700/80 hover:bg-cyan-soft hover:text-ink-700' => ! request()->routeIs('password.*'),
+            ])
+        >
+            <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="{{ $icons['lock'] }}"/>
+            </svg>
+            Ubah kata sandi
+        </a>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf

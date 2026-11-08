@@ -15,6 +15,8 @@ return [
     'unique' => ':Attribute sudah digunakan.',
     'regex' => 'Format :attribute tidak valid.',
     'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+    'current_password' => ':Attribute tidak sesuai.',
+    'different' => ':Attribute harus berbeda dari :other.',
     'min' => [
         'numeric' => ':Attribute minimal :min.',
         'string' => ':Attribute minimal :min karakter.',
@@ -28,6 +30,7 @@ return [
 
     // Nama kolom yang tampil di pesan error
     'attributes' => [
+        'current_password' => 'kata sandi saat ini',
         'name' => 'nama',
         'username' => 'username',
         'password' => 'kata sandi',
@@ -44,6 +47,7 @@ return [
         'items.*.quantity' => 'kuantitas',
         'express_fee' => 'biaya ekspres',
         'notes' => 'catatan',
+        'order_status' => 'status pesanan',
         'payment_method' => 'metode pembayaran',
         'payment_input' => 'nominal pembayaran',
         'quantity' => 'kuantitas',

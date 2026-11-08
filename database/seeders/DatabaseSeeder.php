@@ -11,7 +11,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             ServiceSeeder::class,
-            DemoDataSeeder::class, // hapus baris ini sebelum sistem dipakai beneran
         ]);
+
+        // Data contoh (pelanggan dan transaksi 90 hari) hanya dibuat di lingkungan lokal
+        if (app()->environment('local')) {
+            $this->call(DemoDataSeeder::class);
+        }
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceController;
@@ -38,6 +39,10 @@ Route::middleware('auth')->group(function () {
 
     // Halaman yang dipakai Owner dan Kasir
     Route::middleware('role:owner,cashier')->group(function () {
+        // Ubah kata sandi sendiri
+        Route::get('/profile/password', [PasswordController::class, 'edit'])->name('password.edit');
+        Route::put('/profile/password', [PasswordController::class, 'update'])->name('password.update');
+
         // Transaksi: daftar, form baru, simpan, detail, ubah status, dan tambah pembayaran
         Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'receipt'])->name('transactions.receipt');

@@ -86,15 +86,16 @@
 
 @if ($chart['total'] > 0)
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script>
+        // Skrip dijalankan setelah app.js (modul) siap
+        document.addEventListener('DOMContentLoaded', () => {
         // Grafik pendapatan menurut periode terpilih
         const chartData = @js($chart);
         const rupiah = (value) => 'Rp' + new Intl.NumberFormat('id-ID').format(value);
         const compact = new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 });
         const isBar = chartData.type === 'bar';
 
-        new Chart(document.getElementById('incomeChart'), {
+        loadChart().then((Chart) => new Chart(document.getElementById('incomeChart'), {
             type: chartData.type,
             data: {
                 labels: chartData.labels,
@@ -136,6 +137,7 @@
                     },
                 },
             },
+        }));
         });
     </script>
     @endpush

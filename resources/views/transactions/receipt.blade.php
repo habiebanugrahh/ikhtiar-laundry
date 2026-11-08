@@ -5,23 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nota {{ $transaction->code }} | Ikhtiar Laundry</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* Ukuran kertas A4 dengan margin cetak 15 mm */
         @page { size: A4; margin: 15mm; }
 
-        /* Pertahankan warna latar (misalnya header tabel) saat dicetak */
         html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-        body { font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 antialiased print:bg-white">
+<body class="bg-slate-100 font-sans text-slate-900 antialiased print:bg-white">
 
 @php
     $isPaid = $transaction->payment_status === \App\Models\Transaction::PAYMENT_PAID;
@@ -197,7 +190,6 @@
 </main>
 
 <script>
-    // Buka dialog cetak otomatis jika halaman dibuka dengan ?print=1
     if (new URLSearchParams(window.location.search).get('print') === '1') {
         window.addEventListener('load', () => setTimeout(() => window.print(), 500));
     }

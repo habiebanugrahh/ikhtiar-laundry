@@ -1,58 +1,180 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Ikhtiar Laundry
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem rekapitulasi pendapatan harian dan bulanan untuk Ikhtiar Laundry berbasis web. Sistem ini membantu Kasir mencatat transaksi dan pembayaran, serta membantu Owner memantau uang yang benar-benar diterima setiap hari dan setiap bulan.
 
-## About Laravel
+Proyek ini dikembangkan dengan metode Waterfall sebagai bagian dari tugas kuliah, mengacu pada dokumen proposal "Implementasi Sistem Rekapitulasi Pendapatan Harian dan Bulanan untuk Ikhtiar Laundry berbasis Web".
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Kasir
+- Login dengan username dan kata sandi
+- Dashboard operasional: jumlah transaksi hari ini, transaksi menunggu pembayaran, pesanan dalam proses, daftar tagihan yang perlu ditagih, dan transaksi terbaru
+- Input transaksi: pilih atau tambah pelanggan, beberapa layanan dalam satu transaksi, kuantitas (kg atau pcs), biaya ekspres, catatan pesanan
+- Total biaya dihitung otomatis, pembayaran awal opsional (tunai dengan kembalian, transfer, QRIS)
+- Pembayaran lanjutan untuk pelunasan atau cicilan
+- Mengubah status pesanan: diterima, diproses, selesai, diambil
+- Cetak nota A4
+- Mencari dan menambah data pelanggan
+- Melihat transaksi hari ini dan transaksi yang belum lunas
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Owner
+- Seluruh fitur Kasir
+- Dashboard analitik: pendapatan hari ini dan bulan ini, transaksi belum lunas, grafik pendapatan (7 hari, 30 hari, 12 bulan)
+- Pengaturan tarif layanan (tambah, ubah, aktifkan atau nonaktifkan)
+- Data karyawan (kelola akun Kasir)
+- Melihat seluruh transaksi dengan pencarian dan filter (status, rentang tanggal)
+- Rekap pendapatan harian
+- Rekap pendapatan bulanan dengan grafik tren harian
+- Halaman Laporan: pratinjau lalu unduh PDF atau Excel
 
-## Learning Laravel
+### Semua pengguna
+- Ubah kata sandi sendiri
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Aturan bisnis penting
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Setiap transaksi memiliki nomor unik dengan format `IKH-YYYYMMDD-NNN`.
+2. Total biaya = kuantitas x tarif untuk setiap layanan, ditambah biaya ekspres jika dipilih. Perhitungan selalu dilakukan di server.
+3. Pendapatan dihitung dari **uang yang benar-benar diterima**. Transaksi yang belum dibayar tidak dihitung sebagai uang masuk.
+4. Pembayaran sebagian disimpan beserta sisa tagihan. Pembayaran berikutnya menambah akumulasi pembayaran.
+5. Rekap harian dan bulanan mengelompokkan pembayaran berdasarkan **tanggal uang diterima**, bukan tanggal transaksi dibuat.
+6. Perubahan tarif hanya berlaku untuk transaksi baru. Tarif pada transaksi lama tidak berubah.
+7. Hak akses dibatasi di sisi server dengan middleware, sehingga halaman terlarang tetap tertolak walaupun URL diketik langsung.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Teknologi
 
-## Agentic Development
+- PHP 8.3 dan Laravel 13 (pola MVC)
+- MySQL
+- Tailwind CSS 4 dan Alpine.js, dibangun dengan Vite
+- Chart.js untuk grafik
+- dompdf untuk PDF dan PhpSpreadsheet untuk Excel
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Persyaratan
+
+- PHP 8.3 atau lebih baru dengan ekstensi `gd`, `zip`, `mbstring`, `xml`, dan `dom`
+- Composer
+- Node.js dan npm
+- MySQL
+
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+git clone <url-repositori> ikhtiar-laundry
+cd ikhtiar-laundry
 
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Buat database:
 
-## Contributing
+```bash
+mysql -u root -p -e "CREATE DATABASE ikhtiar_laundry CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Atur `.env`:
 
-## Code of Conduct
+```env
+APP_NAME="Ikhtiar Laundry"
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_FAKER_LOCALE=id_ID
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ikhtiar_laundry
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Security Vulnerabilities
+Atur zona waktu di `config/app.php`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```php
+'timezone' => 'Asia/Jakarta',
+```
 
-## License
+Migrasi database dan isi data awal:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate --seed
+```
+
+Pasang dan bangun aset:
+
+```bash
+npm install
+npm run build
+```
+
+Jalankan aplikasi:
+
+```bash
+php artisan serve
+```
+
+Buka `http://127.0.0.1:8000`. Selama pengembangan, jalankan `npm run dev` di terminal terpisah agar perubahan tampilan langsung terlihat.
+
+## Akun contoh (lingkungan pengembangan)
+
+| Role | Username | Kata sandi |
+|---|---|---|
+| Owner | `owner` | `owner123` |
+| Kasir | `kasir1` | `kasir123` |
+
+Ganti kata sandi akun ini lewat menu **Ubah kata sandi** sebelum sistem dipakai sungguhan.
+
+Saat `APP_ENV=local`, seeder juga membuat 12 pelanggan dan transaksi 90 hari terakhir sebagai data contoh. Data contoh ini tidak dibuat di lingkungan lain. Tarif dan nama layanan di seeder hanya contoh, ganti lewat menu Pengaturan Tarif.
+
+## Perintah yang berguna
+
+```bash
+php artisan migrate:fresh --seed   # reset database (menghapus semua data)
+php artisan laundry:verify         # memeriksa konsistensi data transaksi, pembayaran, dan rekap
+npm run build                      # membangun aset untuk produksi
+```
+
+## Struktur folder utama
+
+```
+app/
+  Console/Commands/     perintah laundry:verify
+  Exports/              pembuat berkas Excel laporan
+  Http/Controllers/     controller (auth, transaksi, pembayaran, pelanggan, tarif, karyawan, laporan)
+  Http/Middleware/      pembatasan akses berdasarkan role
+  Models/               User, Customer, Service, Transaction, TransactionItem, Payment
+  Support/              Format (rupiah) dan IncomeReport (data laporan)
+database/
+  migrations/           struktur tabel
+  seeders/              akun, layanan, dan data contoh
+resources/
+  css/ js/              aset Tailwind, Alpine, dan Chart.js (dibangun Vite)
+  views/                tampilan Blade
+lang/id/                pesan validasi Bahasa Indonesia
+```
+
+## Basis data
+
+| Tabel | Isi |
+|---|---|
+| `users` | akun dengan `username`, `role` (owner atau cashier), dan status aktif |
+| `customers` | nama, nomor telepon, alamat |
+| `services` | nama layanan, satuan, tarif, status aktif |
+| `transactions` | nomor, pelanggan, pencatat, tanggal, ekspres, total, akumulasi bayar, status pembayaran, status pesanan |
+| `transaction_items` | rincian layanan per transaksi (nama, satuan, dan tarif disalin saat transaksi dibuat) |
+| `payments` | setiap pembayaran yang diterima, dasar rekap harian dan bulanan |
+
+## Pengujian
+
+Pengujian dilakukan dengan metode black box, mencakup otorisasi akses antarperan, akurasi perhitungan, serta pencetakan nota dan ekspor laporan. Untuk memeriksa akurasi perhitungan secara otomatis, jalankan `php artisan laundry:verify`.
+
+## Catatan untuk penggunaan sungguhan
+
+- Atur `APP_ENV=production` dan `APP_DEBUG=false` di `.env`.
+- Ganti kata sandi akun Owner dan Kasir, serta ganti tarif contoh dengan tarif resmi.
+- Jalankan `npm run build`, lalu `php artisan config:cache`, `php artisan route:cache`, dan `php artisan view:cache`.
+- Lakukan pencadangan database secara berkala, misalnya setiap malam:
+
+```bash
+mysqldump -u USERNAME -p ikhtiar_laundry > backup-$(date +%F).sql
+```

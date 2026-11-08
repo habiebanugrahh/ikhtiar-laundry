@@ -174,14 +174,15 @@
 
 @if ($totalReceived > 0)
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script>
+        // Skrip dijalankan setelah app.js (modul) siap
+        document.addEventListener('DOMContentLoaded', () => {
         // Grafik tren pembayaran diterima per hari
         const chartData = @js($chart);
         const rupiah = (value) => 'Rp' + new Intl.NumberFormat('id-ID').format(value);
         const compact = new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 });
 
-        new Chart(document.getElementById('dailyChart'), {
+        loadChart().then((Chart) => new Chart(document.getElementById('dailyChart'), {
             type: 'line',
             data: {
                 labels: chartData.labels,
@@ -222,6 +223,7 @@
                     },
                 },
             },
+        }));
         });
     </script>
     @endpush
