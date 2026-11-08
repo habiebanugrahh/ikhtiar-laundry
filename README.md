@@ -167,14 +167,3 @@ lang/id/                pesan validasi Bahasa Indonesia
 ## Pengujian
 
 Pengujian dilakukan dengan metode black box, mencakup otorisasi akses antarperan, akurasi perhitungan, serta pencetakan nota dan ekspor laporan. Untuk memeriksa akurasi perhitungan secara otomatis, jalankan `php artisan laundry:verify`.
-
-## Catatan untuk penggunaan sungguhan
-
-- Atur `APP_ENV=production` dan `APP_DEBUG=false` di `.env`.
-- Ganti kata sandi akun Owner dan Kasir, serta ganti tarif contoh dengan tarif resmi.
-- Jalankan `npm run build`, lalu `php artisan config:cache`, `php artisan route:cache`, dan `php artisan view:cache`.
-- Lakukan pencadangan database secara berkala, misalnya setiap malam:
-
-```bash
-mysqldump -u USERNAME -p ikhtiar_laundry > backup-$(date +%F).sql
-```
