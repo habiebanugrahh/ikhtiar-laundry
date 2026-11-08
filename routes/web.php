@@ -74,8 +74,8 @@ Route::middleware('auth')->group(function () {
             ->name('reports.export');
     });
 
-    // Area Kasir
-    Route::middleware('role:cashier')->group(function () {
+    // Dashboard operasional: untuk Kasir, dan juga bisa dibuka Owner
+    Route::middleware('role:owner,cashier')->group(function () {
         Route::get('/cashier/dashboard', [DashboardController::class, 'cashier'])->name('cashier.dashboard');
     });
 });

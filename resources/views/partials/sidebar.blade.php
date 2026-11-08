@@ -15,6 +15,7 @@
         'download' => 'M12 3v12m0 0l-4-4m4 4l4-4M4 21h16',
         'logout' => 'M15 17l5-5-5-5M20 12H9M9 21H5a1 1 0 01-1-1V4a1 1 0 011-1h4',
         'lock' => 'M8 11V8a4 4 0 118 0v3M6 11h12v9H6v-9z',
+        'grid' => 'M4 4h7v7H4V4zM13 4h7v7h-7V4zM4 13h7v7H4v-7zM13 13h7v7h-7v-7z',
     ];
 
     // Menu per role. Menu yang bukan hak akses tidak ditampilkan.
@@ -22,6 +23,7 @@
         $groups = [
             ['title' => null, 'items' => [
                 ['label' => 'Dashboard', 'route' => 'owner.dashboard', 'match' => ['owner.dashboard'], 'icon' => 'home'],
+                ['label' => 'Dashboard Operasional', 'route' => 'cashier.dashboard', 'match' => ['cashier.dashboard'], 'icon' => 'grid'],
                 ['label' => 'Transaksi Baru', 'route' => 'transactions.create', 'match' => ['transactions.create'], 'icon' => 'plus'],
                 ['label' => 'Data Transaksi', 'route' => 'transactions.index', 'match' => ['transactions.index', 'transactions.show'], 'icon' => 'list'],
                 ['label' => 'Data Pelanggan', 'route' => 'customers.index', 'match' => ['customers.*'], 'icon' => 'users'],

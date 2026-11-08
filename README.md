@@ -18,7 +18,7 @@ Proyek ini dikembangkan dengan metode Waterfall sebagai bagian dari tugas kuliah
 - Melihat transaksi hari ini dan transaksi yang belum lunas
 
 ### Owner
-- Seluruh fitur Kasir
+- Seluruh fitur Kasir tanpa terkecuali, termasuk dashboard operasional dan melihat semua transaksi tanpa batasan
 - Dashboard analitik: pendapatan hari ini dan bulan ini, transaksi belum lunas, grafik pendapatan (7 hari, 30 hari, 12 bulan)
 - Pengaturan tarif layanan (tambah, ubah, aktifkan atau nonaktifkan)
 - Data karyawan (kelola akun Kasir)
