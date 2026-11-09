@@ -4,18 +4,13 @@
 @section('page_title', 'Dashboard')
 
 @section('panel')
-<div class="flex flex-wrap items-center justify-between gap-3">
-    <p class="text-sm text-ink-700/70">Halo, {{ auth()->user()->name }}. Siap mencatat pesanan hari ini?</p>
-
-    <a
-        href="{{ route('transactions.create') }}"
-        class="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-    >
+<x-laundry.hero :title="'Halo, ' . auth()->user()->name" subtitle="Siap mencatat pesanan hari ini?">
+    <a href="{{ route('transactions.create') }}" class="inline-flex rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink-700">
         Transaksi baru
     </a>
-</div>
+</x-laundry.hero>
 
-<div class="mt-5 grid gap-4 sm:grid-cols-3">
+<div class="mt-6 grid gap-4 sm:grid-cols-3">
     <x-stat-card label="Transaksi hari ini" :value="$transactionCountToday" note="Transaksi dicatat hari ini" :href="route('transactions.index')" />
     <x-stat-card label="Menunggu pembayaran" :value="$waitingPaymentCount" note="Belum bayar atau baru dibayar sebagian" :href="route('transactions.index', ['payment_status' => 'outstanding'])" />
     <x-stat-card label="Pesanan dalam proses" :value="$inProgressCount" note="Berstatus diterima atau diproses" />
@@ -56,9 +51,8 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-8 text-center text-ink-700/60">
-                            Belum ada transaksi. Mulai dengan menekan tombol Transaksi baru.
-                        </td>
+                        <td colspan="5" class="px-5 py-2"><x-empty-state>                            Belum ada transaksi. Mulai dengan menekan tombol Transaksi baru.
+                        </x-empty-state></td>
                     </tr>
                 @endforelse
             </tbody>

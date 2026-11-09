@@ -8,8 +8,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        /* Ukuran kertas A4 dengan margin cetak 15 mm */
         @page { size: A4; margin: 15mm; }
 
+        /* Pertahankan warna latar (misalnya header tabel) saat dicetak */
         html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
     </style>
@@ -37,7 +39,7 @@
     {{-- Kop --}}
     <header class="flex flex-wrap items-start justify-between gap-6 border-b-2 border-cyan-600 pb-5">
         <div class="flex items-start gap-3">
-            <div class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-xl font-bold text-white">I</div>
+            <x-laundry.logo class="size-12 shrink-0" />
             <div>
                 <h1 class="text-2xl font-bold text-sky-900">Ikhtiar Laundry</h1>
                 <p class="text-sm text-slate-600">Jasa pencucian dan perawatan pakaian</p>
@@ -190,6 +192,7 @@
 </main>
 
 <script>
+    // Buka dialog cetak otomatis jika halaman dibuka dengan ?print=1
     if (new URLSearchParams(window.location.search).get('print') === '1') {
         window.addEventListener('load', () => setTimeout(() => window.print(), 500));
     }

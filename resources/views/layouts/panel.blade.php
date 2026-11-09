@@ -30,7 +30,11 @@
             <p class="ml-auto hidden text-sm text-ink-700/70 sm:block">{{ now()->translatedFormat('l, d F Y') }}</p>
         </header>
 
-        <main class="flex-1 px-4 py-6 lg:px-8">
+        <main class="relative isolate flex-1 px-4 py-6 lg:px-8">
+            {{-- Aksen halus di belakang konten --}}
+            <x-laundry.bubbles class="pointer-events-none absolute right-2 top-0 -z-10 hidden w-56 text-brand-400 opacity-50 sm:block" />
+            <x-laundry.bubbles class="pointer-events-none absolute bottom-4 left-2 -z-10 hidden w-36 text-brand-400 opacity-30 lg:block" />
+
             @include('partials.flash')
 
             @yield('panel')

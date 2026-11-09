@@ -9,8 +9,18 @@
     $segmentBase = 'rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 @endphp
 
+{{-- Sambutan --}}
+<x-laundry.hero :title="'Halo, ' . auth()->user()->name" subtitle="Ringkasan Ikhtiar Laundry hari ini.">
+    <a href="{{ route('transactions.create') }}" class="inline-flex rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink-700">
+        Transaksi baru
+    </a>
+    <a href="{{ route('reports.daily') }}" class="inline-flex rounded-lg px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/50 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
+        Rekap hari ini
+    </a>
+</x-laundry.hero>
+
 {{-- Ringkasan --}}
-<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+<div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <x-stat-card
         label="Pendapatan hari ini"
         :value="\App\Support\Format::rupiah($incomeToday)"

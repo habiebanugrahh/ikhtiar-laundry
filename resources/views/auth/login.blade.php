@@ -5,15 +5,24 @@
 @section('content')
 <div class="grid min-h-screen lg:grid-cols-2">
 
-    {{-- Panel kiri: identitas usaha (disembunyikan di layar kecil) --}}
-    <aside class="hidden bg-linear-to-br from-brand-500 to-ink-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <p class="text-lg font-bold">Ikhtiar Laundry</p>
+    {{-- Panel kiri: identitas usaha dengan ilustrasi laundry (disembunyikan di layar kecil) --}}
+    <aside class="relative isolate hidden overflow-hidden bg-linear-to-br from-brand-500 to-ink-700 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <x-laundry.swirl class="pointer-events-none absolute -right-20 -top-20 -z-10 size-96 text-white opacity-20" />
+        <x-laundry.bubbles class="pointer-events-none absolute right-6 top-1/3 -z-10 w-52 text-white opacity-80" />
+        <x-laundry.bubbles class="pointer-events-none absolute -left-8 bottom-40 -z-10 w-40 text-white opacity-40" />
+        <x-laundry.waves class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 w-full text-white" />
+        <x-laundry.washer class="pointer-events-none absolute bottom-12 right-12 w-40 drop-shadow-xl xl:w-44" />
+
+        <div class="flex items-center gap-3">
+            <x-laundry.logo class="size-10" />
+            <p class="text-lg font-bold">Ikhtiar Laundry</p>
+        </div>
 
         <div>
-            <h1 class="max-w-md text-4xl font-bold leading-tight">
+            <h1 class="max-w-sm text-4xl font-bold leading-tight">
                 Catat transaksi hari ini, lihat pendapatannya saat itu juga.
             </h1>
-            <p class="mt-4 max-w-md text-brand-100">
+            <p class="mt-4 max-w-sm text-brand-100">
                 Rekap harian dan bulanan dihitung otomatis dari pembayaran yang benar-benar diterima.
             </p>
         </div>
@@ -22,10 +31,16 @@
     </aside>
 
     {{-- Panel kanan: formulir login --}}
-    <main class="flex items-center justify-center bg-white px-6 py-12">
+    <main class="relative isolate flex items-center justify-center overflow-hidden bg-white px-6 py-12">
+        <x-laundry.bubbles class="pointer-events-none absolute -right-10 -top-6 -z-10 w-52 text-brand-400 opacity-50" />
+        <x-laundry.waves class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-24 w-full text-brand-100" />
+
         <div class="w-full max-w-sm">
 
-            <p class="mb-8 text-lg font-bold text-brand-600 lg:hidden">Ikhtiar Laundry</p>
+            <div class="mb-8 flex items-center gap-2.5 lg:hidden">
+                <x-laundry.logo class="size-9" />
+                <p class="text-lg font-bold text-brand-600">Ikhtiar Laundry</p>
+            </div>
 
             <h2 class="text-2xl font-bold text-ink-700">Masuk ke sistem</h2>
             <p class="mt-1 text-sm text-ink-700/70">Gunakan akun yang diberikan oleh Owner.</p>

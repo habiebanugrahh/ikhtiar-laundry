@@ -115,7 +115,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-5 py-8 text-center text-ink-700/60">Belum ada pembayaran untuk transaksi ini.</td>
+                                <td colspan="5" class="px-5 py-2"><x-empty-state>Belum ada pembayaran untuk transaksi ini.</x-empty-state></td>
                             </tr>
                         @endforelse
                     </tbody>

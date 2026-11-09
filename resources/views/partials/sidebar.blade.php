@@ -56,7 +56,7 @@
 
     {{-- Identitas usaha --}}
     <div class="flex items-center gap-3 px-5 py-5">
-        <div class="flex size-9 items-center justify-center rounded-xl bg-brand-500 text-sm font-bold text-white">I</div>
+        <x-laundry.logo class="size-9 shrink-0" />
         <div class="leading-tight">
             <p class="font-bold text-ink-700">Ikhtiar Laundry</p>
             <p class="text-xs text-ink-700/60">Rekapitulasi pendapatan</p>
@@ -95,6 +95,9 @@
             </div>
         @endforeach
     </nav>
+
+    {{-- Gelombang air sebagai pemisah --}}
+    <x-laundry.waves class="pointer-events-none h-10 w-full shrink-0 text-brand-100" />
 
     {{-- Pengguna dan logout --}}
     <div class="border-t border-brand-100 p-3">

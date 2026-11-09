@@ -119,7 +119,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-8 text-center text-ink-700/60">Tidak ada pembayaran pada periode ini.</td>
+                        <td colspan="6" class="px-5 py-2"><x-empty-state>Tidak ada pembayaran pada periode ini.</x-empty-state></td>
                     </tr>
                 @endforelse
             </tbody>
